@@ -6,7 +6,6 @@ import requests
 import json
 import codecs
 from datetime import datetime, timedelta
-from decouple import config
 
 from bancointer.deprecated import deprecated
 
@@ -16,7 +15,12 @@ class Util(object):
     _TOKEN_FILE_PATH = (
         os.path.dirname(os.path.realpath(__file__)) + os.sep + "token.json"
     )
-    _X_CONTA_CORRENTE = config("X_INTER_CONTA_CORRENTE")
+    _X_CONTA_CORRENTE = None
+    try:
+        from decouple import config
+        _X_CONTA_CORRENTE = config("X_INTER_CONTA_CORRENTE")
+    except Exception as e:
+        print("bancointer.Util.Except: ", e)
 
     def __init__(self, base_url, base_url_token, client_id, client_secret, cert):
         self.client_id = client_id
@@ -142,7 +146,8 @@ class Util(object):
     def __save_token(self, token_data=None):
         """Save a token to file. Add expires_at token, value date now + expires in seconds"""
         if token_data is not None:
-            expires_at = datetime.now() + timedelta(seconds=token_data["expires_in"])
+            expires_at = datetime.now() + \
+                timedelta(seconds=token_data["expires_in"])
             token_data["expires_at"] = str(expires_at)
         else:
             pass
